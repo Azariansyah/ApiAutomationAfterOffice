@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class TestTugasValidation {
-    ResponseItem responseItem;
 
     @Test
     public void createProduct() {
