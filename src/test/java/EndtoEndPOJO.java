@@ -6,7 +6,12 @@ import io.restassured.specification.RequestSpecification;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.testng.Assert.assertEquals;
+
 public class EndtoEndPOJO {
+
+    ResponseItem responseItem;
 
     @Test
     public void createProduct() {
@@ -18,6 +23,7 @@ public class EndtoEndPOJO {
                 "      \"CPU model\": \"Intel Core i9\",\n" +
                 "      \"Hard disk size\": \"1 TB\"\n" +
                 "   }\n" +
+                "" +
                 "}";
         RestAssured.baseURI = "https://api.restful-api.dev";
         RequestSpecification requestSpecification = RestAssured
@@ -31,17 +37,28 @@ public class EndtoEndPOJO {
                 .when()
                 .post("{path}");
         System.out.println("Response API" + response.asPrettyString());
+        Assert.assertEquals(response.getStatusCode(), 200, "Status code check");
+
         JsonPath jsonPath = response.jsonPath();
         ResponseItem responseItem = jsonPath.getObject("", ResponseItem.class);
-        System.out.println("Response API" + responseItem.id);
-        System.out.println("Response API" + responseItem.name);
-        System.out.println("Response API" + responseItem.createdAt);
-        if (responseItem.data != null) {
-            System.out.println("Response API" + responseItem.data.year);
-            System.out.println("Response API" + responseItem.data.price);
-            System.out.println("Response API" + responseItem.data.CPUModel);
-            System.out.println("Response API" + responseItem.data.hardDiskSize);
-        }
+
+        // Validate root fields
+        Assert.assertNotNull(responseItem.id, "ID should not be null");
+        Assert.assertTrue(responseItem.id.startsWith("ff"), "ID should start with 'ff'");
+        Assert.assertEquals(responseItem.name, "Apple MacBook Pro 16", "Product name check");
+
+        // Validate createdAt format using raw JSON string
+        String createdAt = jsonPath.getString("createdAt");
+        Assert.assertTrue(createdAt.startsWith("2025"), "CreatedAt year validation");
+
+        // Validate data object
+        Assert.assertNotNull(responseItem.data, "Data object should not be null");
+
+        // Validate data fields
+        Assert.assertEquals(responseItem.data.year, 2019, "Year validation");
+        Assert.assertEquals(responseItem.data.price, 1849.99, 0.001, "Price validation");
+        Assert.assertEquals(responseItem.data.CPUModel, "Intel Core i9", "CPU Model validation");
+        Assert.assertEquals(responseItem.data.hardDiskSize, "1 TB", "Hard disk size validation");
     }
 
     @Test
@@ -53,18 +70,21 @@ public class EndtoEndPOJO {
                 .log()
                 .all()
                 .pathParam("path", "objects")
-                .pathParam("id", "ff808181932badb6019513f5bb1844ba")
+                .pathParam("id", "ff808181932badb601952fcde1f20280")
                 .when()
                 .get("{path}/{id}");
         System.out.println("Response API" + response.asPrettyString());
-        JsonPath jsonPath = response.jsonPath();
-        ResponseItem responseItem = jsonPath.getObject("", ResponseItem.class);
-        if (responseItem.data != null) {
-            System.out.println("Response API" + responseItem.data.year);
-            System.out.println("Response API" + responseItem.data.price);
-            System.out.println("Response API" + responseItem.data.CPUModel);
-            System.out.println("Response API" + responseItem.data.hardDiskSize);
-        }
+        JsonPath addJsonPath = response.jsonPath();
+        responseItem = addJsonPath.getObject("", ResponseItem.class);
+        Assert.assertEquals(response.statusCode(), 200);
+        Assert.assertTrue(responseItem.id.contains("ff"));
+        Assert.assertNotNull(responseItem.data);
+        Assert.assertEquals(2019, responseItem.data.year);
+        Assert.assertEquals(1849.99, responseItem.data.price, 0.001); // Delta untuk double
+        Assert.assertEquals("Intel Core i9", responseItem.data.CPUModel);
+        Assert.assertEquals("1 TB", responseItem.data.hardDiskSize);
+
+
     }
 
     @Test
@@ -94,4 +114,5 @@ public class EndtoEndPOJO {
         }
     }
 }
+
 
