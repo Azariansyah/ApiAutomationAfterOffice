@@ -11,6 +11,13 @@ public class RestfulApi {
 //        UpdateObject();
 //        PartiallyUpdateObject();
         DeleteObject();
+        /*
+         * Penamaan function nya silahkan menggunakan camelcase ya
+         * perlu direvisi
+         * - AddObject();
+         * - UpdateObject();
+         * - PartiallyUpdateObject();
+         */
     }
 public static void getAllProducts(){
         RestAssured.baseURI = "https://api.restful-api.dev";
@@ -33,6 +40,10 @@ public static void getAllProducts(){
     public static void getObjectsById() {
         RestAssured.baseURI = "https://api.restful-api.dev";
 
+        /*
+         * Karena query paramnya lebih dari satu value, bisa diganti jadi ini aja y
+         * queryParam("id", 3,5,10)
+         */
         Response response = RestAssured
                 .given()
                 .log().all()
