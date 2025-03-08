@@ -13,6 +13,15 @@ public class EndtoEndPOJO {
 
     ResponseItem responseItem;
 
+    /*
+     * Suggestion
+     * untuk test deleteProduct , kita parsing PID. Ini bisa ditambahkan annotation dependsOnMethods di test 
+     * createProduct(). Nanti setelah createProduct() bakal dapat pid, nah itu bisa di set dulu,
+     * nanti di deleteProduct() bisa dipanggil PID nya
+     */
+
+    String pidProduct;
+
     @Test
     public void createProduct() {
         String json = "{\n" +
@@ -59,9 +68,11 @@ public class EndtoEndPOJO {
         Assert.assertEquals(responseItem.data.price, 1849.99, 0.001, "Price validation");
         Assert.assertEquals(responseItem.data.CPUModel, "Intel Core i9", "CPU Model validation");
         Assert.assertEquals(responseItem.data.hardDiskSize, "1 TB", "Hard disk size validation");
+
+        pidProduct = responseItem.id;
     }
 
-    @Test
+    @Test(dependsOnMethods = "createProduct")
     public void GetSingleProduct() {
         RestAssured.baseURI = "https://api.restful-api.dev";
         RequestSpecification requestSpecification = RestAssured
@@ -70,7 +81,7 @@ public class EndtoEndPOJO {
                 .log()
                 .all()
                 .pathParam("path", "objects")
-                .pathParam("id", "ff808181932badb601952fcde1f20280")
+                .pathParam("id", pidProduct)
                 .when()
                 .get("{path}/{id}");
         System.out.println("Response API" + response.asPrettyString());
@@ -87,7 +98,7 @@ public class EndtoEndPOJO {
 
     }
 
-    @Test
+    @Test(dependsOnMethods = "createProduct")
     public void deleteProduct() {
         RestAssured.baseURI = "https://api.restful-api.dev";
         RequestSpecification requestSpecification = RestAssured
@@ -96,7 +107,7 @@ public class EndtoEndPOJO {
                 .log()
                 .all()
                 .pathParam("path", "objects")
-                .pathParam("id", "ff808181932badb6019522a12ec66c1a")
+                .pathParam("id", pidProduct)
                 .when()
                 .delete("{path}/{id}");
         System.out.println("Response API" + response.asPrettyString());
